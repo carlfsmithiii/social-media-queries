@@ -12,6 +12,10 @@ const client = new Client({
 // route handlers go here
 app.get('/users', (req, res) => {
     client.query('SELECT * FROM users', (err, result) => {
+        if (err) {
+            res.status(500).send();
+            return console.log(err);
+        }
         res.send(result.rows);
     });
 });
@@ -36,8 +40,12 @@ app.get('/users/:id', (req, res) => {
     const id = req.params.id;
     client.query('SELECT * FROM users WHERE id=($1)', [id], (err, result) => {
         if (err) {
-            res.status(400).send();
+            res.status(500).send();
             return console.log(err);
+        }
+        if (result.rowCount == 0) {
+            console.log('nope', result);
+            return res.status(404).send();
         }
         res.status(200).send(JSON.stringify(result.rows[0]));
     });
